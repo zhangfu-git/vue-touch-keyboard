@@ -2,27 +2,15 @@
 	div
 		.content(:class="{ hasKeyboard: visible }")
 			fieldset
-				legend Layouts
-				select#layoutSelector(v-model="layout")
-					option(v-for="(layout, key) in allLayouts", :value="key") {{ key }}
-
+				legend Normal layout
+				input#text.input(type="text", placeholder="Text input", @focus="show", data-layout="normal")
 			fieldset
 				legend Normal layout
 				input#text.input(type="text", placeholder="Text input", @focus="show", data-layout="normal")
 
-			fieldset
-				legend Compact layout
-				input.input(type="text", placeholder="Text input", @focus="show", data-layout="compact", maxlength="5")
-
-			fieldset
-				legend Numeric layout
-				input.input(type="number", placeholder="Number input", number, @focus="show", data-layout="numeric")
-
-			fieldset
-				legend Password with compact layout
-				input.input(type="password", placeholder="Password input", @focus="show", data-layout="compact")
-
-		vue-touch-keyboard#keyboard(v-if="visible", :layout="layout", :cancel="hide", :accept="accept", :input="input", :next="next", :options="options")
+		.PinYin
+			span(v-for="(item, index) in PinYin", key="index", v-text="item", @click="clickPinYin(item)")
+		vue-touch-keyboard#keyboard(v-if="visible", :layout="layout", :cancel="hide", :accept="accept", :input="input", :next="next", :options="options", :change="change")
 
 </template>
 
@@ -30,7 +18,7 @@
 	import Vue from "vue";
 	import VueTouchKeyboard from "../src";
 
-	import {each, isFunction, cloneDeep, merge} from 'lodash';	
+	import {each, isFunction, cloneDeep, merge} from 'lodash';
 
 	Vue.use(VueTouchKeyboard);
 
@@ -45,18 +33,33 @@
 				input: null,
 				options: {
 					useKbEvents: true
-				}			
+				},
+				PinYin: ["拼","拼","拼","拼","拼","拼","拼","拼"],
+				currentCaret: 0,
+				prevPinYinCaret: 0
 			}
 		},
-
+		watch: {
+			input (input) {
+				this.prevPinYinCaret = input.value.length
+			}
+		},
 		methods: {
 			hide() {
 				this.visible = false;
-			},	
+			},
 
 			accept(text) {
 				//alert("Input text: " + text);
 				this.hide();
+			},
+
+			clickPinYin (value) {
+				let text = this.input.value
+				text = text.substring(0, this.prevPinYinCaret) + value + text.substring(this.currentCaret);
+				this.input.value = text
+				this.prevPinYinCaret++
+				this.currentCaret++
 			},
 
 			next() {
@@ -85,10 +88,20 @@
 
 				this.$nextTick(() => {
 					this.input.scrollIntoView();
-				});				
-			}		 
+				});
+			},
+
+			change (text, addChar, caret) {
+				this.currentCaret = caret.end
+				if (this.currentCaret < this.prevPinYinCaret) {
+					let x = this.currentCaret
+					this.currentCaret = this.prevPinYinCaret
+					this.prevPinYinCaret = x
+				}
+				console.log(`当前光标的位置:${this.currentCaret}, '上一个拼音输入的位置：'${this.prevPinYinCaret}`)
+			}
 		},
-		
+
 		mounted() {
 			window.app = this;
 			this.$nextTick(() => {
@@ -113,7 +126,17 @@
 		-webkit-box-sizing: border-box;
 		box-sizing: border-box;
 	}
-
+	.PinYin {
+		background-color: #ccc;
+		color: #666;
+		padding: 10px;
+		z-index: 999999999999;
+		position: absolute;
+		bottom: 300px;
+		span {
+			padding: 10px;
+		}
+	}
 	.content {
 		text-align: center;
 		position: absolute;
@@ -142,7 +165,7 @@
 		box-shadow: 0px -3px 10px rgba(black, 0.3);
 
 		border-radius: 10px;
-	}	
+	}
 
 	fieldset {
 		display: block;
@@ -153,7 +176,7 @@
 		background-color: #fff;
 		border-color: #ddd;
 		border-width: 1px;
-		border-radius: 4px;	
+		border-radius: 4px;
 	}
 
 	input.input, select#layoutSelector {
@@ -169,12 +192,12 @@
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-		transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;		
+		transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 
 		&:focus {
 			border-color: #66afe9;
 			outline: 0;
-			box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);			
+			box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
 		}
 	}
 
