@@ -34,7 +34,7 @@
 				options: {
 					useKbEvents: true
 				},
-				PinYin: ["拼","拼","拼","拼","拼","拼","拼","拼"],
+				PinYin: ["拼","品","频","聘","拼"],
 				currentCaret: 0,
 				prevPinYinCaret: 0
 			}
