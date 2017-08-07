@@ -167,7 +167,7 @@
 				}
 				caret.end = caret.start;
 				// 触发backspace的时候，$emit一个backspace事件
-				this.$emit("emitBackspaceEvent", caret.end);
+				this.$emit("clickBackspace", caret.end);
 				return text;
 			},
 
